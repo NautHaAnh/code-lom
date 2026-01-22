@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accordion</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font: 2vmin sans-serif;
+            margin: 0;
+            background: #252525;
+            display: flex;
+            min-height: 100%;
+        }
+
+        .column-accordian {
+            min-height: 100%;
+            width: 100%;
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: stretch;
+
+            >.column {
+                -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+                color: white;
+                font-weight: bold;
+                cursor: pointer;
+                text-align: center;
+                text-transform: uppercase;
+                transition: 1s;
+                flex: 1;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border: 1px solid white;
+
+                @for $i from 1 through 7 {
+                    &:nth-child(#{$i}) {
+                        background: hsla($i*40, 50%, 50%, .8);
+                    }
+                }
+
+                >div {
+                    font-size: 3vmin;
+                    transition: .6s;
+                }
+
+                &.flex {
+                    flex: 10;
+
+                    >div {
+                        font-size: 18vmin;
+                    }
+                }
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <section class="column-accordian">
+        <div class="column" aria-role="button">
+            <div>a</div>
+        </div>
+        <div class="column" aria-role="button">
+            <div>b</div>
+        </div>
+        <div class="column" aria-role="button">
+            <div>c</div>
+        </div>
+        <div class="column flex" aria-role="button">
+            <div>d</div>
+        </div>
+        <div class="column" aria-role="button">
+            <div>e</div>
+        </div>
+        <div class="column" aria-role="button">
+            <div>f</div>
+        </div>
+        <div class="column" aria-role="button">
+            <div>g</div>
+        </div>
+    </section>
+</body>
+<script>
+    (function () {
+        var $columnAccordian = document.querySelector('.column-accordian');
+        if (!$columnAccordian) return;
+
+        var items = [].slice.call($columnAccordian.querySelectorAll('.column'));
+        var prev = $columnAccordian.querySelector('.column.flex') || null;
+        var prev2 = null;
+
+        items.forEach(function (item) {
+            item.addEventListener('click', function () {
+
+                if (prev !== item) {
+                    if (prev) prev.classList.remove('flex');
+                    item.classList.add('flex');
+
+                    prev2 = prev;
+                    prev = item;
+
+                } else {
+                    if (prev2) {
+                        prev2.classList.add('flex');
+                        item.classList.remove('flex');
+                        prev = prev2;
+                        prev2 = item;
+                    }
+                }
+            });
+        });
+    })();
+</script>
+
+</html>
