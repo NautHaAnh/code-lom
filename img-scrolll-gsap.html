@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"="width=device-width, initial-scale=1.0">
+    <title>Scroll Animation Page</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css?family=Signika+Negative:300,400&display=swap");
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Signika Negative", sans-serif;
+            font-weight: 300;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .zoomer,
+        .zoomer2,
+        .zoomer3 {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .zoomer .images,
+        .zoomer2 .images,
+        .zoomer3 .images {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .zoomer .images .clipper,
+        .zoomer2 .images .clipper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 50vh;
+            overflow: hidden;
+        }
+
+        .zoomer3 .images .clipper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 0vh;
+            overflow: hidden;
+        }
+
+        .rt-page-devide {
+            width: 100%;
+            height: 100%;
+        }
+
+        .rt-page-devide-top {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .rt-devide-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(70%);
+        }
+
+        .zoomer .images .clipper img,
+        .zoomer2 .images .clipper img,
+        .zoomer3 .images .clipper img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            filter: brightness(70%);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Zoom In (scale 0.5 -> 1) -->
+    <div class="zoomer">
+        <div class="images">
+            <div class="clipper">
+                <img data-speed="0.5" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200" alt="Zoomer Image">
+            </div>
+        </div>
+    </div>
+
+    <!-- Zoom Out (scale 1.5 -> 1) -->
+    <div class="zoomer2">
+        <div class="images">
+            <div class="clipper">
+                <img data-speed="0.5" src="https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=1200" alt="Zoomer Image">
+            </div>
+        </div>
+    </div>
+
+    <!-- Zoom In + Rotate -->
+    <div class="zoomer3">
+        <div class="images">
+            <div class="clipper" style="will-change: width, height; width: 100%; height: 0%;">
+                <div class="rt-page-devide" style="flex">
+                    <div class="rt-page-devide-top" style="will-change: width, height; width: 100%; height: 0%;">
+                        <img class="rt-devide-image" src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200" alt="Zoomer Image">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GSAP và ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        // Zoomer 1: Zoom In (scale 0.5 -> 1)
+        var images1 = gsap.utils.toArray(".zoomer .images");
+        images1.forEach((image) => {
+            gsap.fromTo(
+                image,
+                { scale: 0.5 },
+                {
+                    scale: 1,
+                    ease: "none",
+                    force3D: true,
+                    scrollTrigger: {
+                        pin: image.parentElement,
+                        trigger: image.parentElement,
+                        start: "top top",
+                        end: "bottom top",
+                        scrub: 0.5
+                    }
+                }
+            );
+        });
+
+        // Zoomer 2: Zoom Out (scale 1.5 -> 1)
+        var images2 = gsap.utils.toArray(".zoomer2 .images");
+        images2.forEach((image) => {
+            gsap.fromTo(
+                image,
+                { scale: 1.5 },
+                {
+                    scale: 1,
+                    ease: "none",
+                    force3D: true,
+                    scrollTrigger: {
+                        pin: image.parentElement,
+                        trigger: image.parentElement,
+                        start: "top top",
+                        end: "bottom top",
+                        scrub: 0.5
+                    }
+                }
+            );
+        });
+
+        // Zoomer 3: Height grows from 0vh to 100vh (mở rộng từ trung tâm)
+        var clipper3 = gsap.utils.toArray(".zoomer3 .images .clipper");
+        clipper3.forEach((clip) => {
+            gsap.fromTo(
+                clip,
+                {
+                    height: "0vh"
+                },
+                {
+                    height: "100vh",
+                    ease: "none",
+                    scrollTrigger: {
+                        pin: clip.parentElement.parentElement,
+                        trigger: clip.parentElement.parentElement,
+                        start: "top top",
+                        end: "bottom top",
+                        scrub: 0.5
+                    }
+                }
+            );
+        });
+    </script>
+
+</body>
+
+</html>
