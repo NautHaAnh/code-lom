@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Direction Effect - Vanilla JS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 50px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .effect--3d {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .pxl-effect--direction {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            cursor: pointer;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .pxl-effect--direction img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .pxl-effect--direction::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: red;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .pxl-effect--content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .pxl-effect--content h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .pxl-effect--content p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Animation States - IN */
+        .pxl-in--top::before,
+        .pxl-in--right::before,
+        .pxl-in--bottom::before,
+        .pxl-in--left::before {
+            opacity: 1;
+        }
+
+        .pxl-in--top .pxl-effect--content,
+        .pxl-in--right .pxl-effect--content,
+        .pxl-in--bottom .pxl-effect--content,
+        .pxl-in--left .pxl-effect--content {
+            opacity: 1;
+        }
+
+        /* Top */
+        .pxl-in--top::before {
+            animation: slideInTop 0.4s ease;
+        }
+
+        .pxl-in--top .pxl-effect--content {
+            animation: contentInTop 0.4s ease;
+        }
+
+        /* Right */
+        .pxl-in--right::before {
+            animation: slideInRight 0.4s ease;
+        }
+
+        .pxl-in--right .pxl-effect--content {
+            animation: contentInRight 0.4s ease;
+        }
+
+        /* Bottom */
+        .pxl-in--bottom::before {
+            animation: slideInBottom 0.4s ease;
+        }
+
+        .pxl-in--bottom .pxl-effect--content {
+            animation: contentInBottom 0.4s ease;
+        }
+
+        /* Left */
+        .pxl-in--left::before {
+            animation: slideInLeft 0.4s ease;
+        }
+
+        .pxl-in--left .pxl-effect--content {
+            animation: contentInLeft 0.4s ease;
+        }
+
+        /* Animation States - OUT */
+        .pxl-out--top::before {
+            animation: slideOutTop 0.4s ease;
+        }
+
+        .pxl-out--top .pxl-effect--content {
+            animation: contentOutTop 0.4s ease;
+        }
+
+        .pxl-out--right::before {
+            animation: slideOutRight 0.4s ease;
+        }
+
+        .pxl-out--right .pxl-effect--content {
+            animation: contentOutRight 0.4s ease;
+        }
+
+        .pxl-out--bottom::before {
+            animation: slideOutBottom 0.4s ease;
+        }
+
+        .pxl-out--bottom .pxl-effect--content {
+            animation: contentOutBottom 0.4s ease;
+        }
+
+        .pxl-out--left::before {
+            animation: slideOutLeft 0.4s ease;
+        }
+
+        .pxl-out--left .pxl-effect--content {
+            animation: contentOutLeft 0.4s ease;
+        }
+
+        /* Keyframes - Slide IN */
+        @keyframes slideInTop {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInBottom {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Keyframes - Content IN */
+        @keyframes contentInTop {
+            from {
+                transform: translate(-50%, -150%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        @keyframes contentInRight {
+            from {
+                transform: translate(50%, -50%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        @keyframes contentInBottom {
+            from {
+                transform: translate(-50%, 50%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        @keyframes contentInLeft {
+            from {
+                transform: translate(-150%, -50%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        /* Keyframes - Slide OUT */
+        @keyframes slideOutTop {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideOutBottom {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideOutLeft {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+
+        /* Keyframes - Content OUT */
+        @keyframes contentOutTop {
+            from {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+
+            to {
+                transform: translate(-50%, -150%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes contentOutRight {
+            from {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+
+            to {
+                transform: translate(50%, -50%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes contentOutBottom {
+            from {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+
+            to {
+                transform: translate(-50%, 50%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes contentOutLeft {
+            from {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+
+            to {
+                transform: translate(-150%, -50%);
+                opacity: 0;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333;
+            font-size: 36px;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>3D Direction Hover Effect</h1>
+        <p class="subtitle">Hover from different directions - Pure Vanilla JS</p>
+
+        <div class="effect--3d">
+            <div class="pxl-effect--direction">
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop"
+                    alt="Mountain">
+                <div class="pxl-effect--content">
+                    <h3>Mountain View</h3>
+                    <p>Discover amazing landscapes</p>
+                </div>
+            </div>
+
+            <div class="pxl-effect--direction">
+                <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&h=400&fit=crop"
+                    alt="Ocean">
+                <div class="pxl-effect--content">
+                    <h3>Ocean Waves</h3>
+                    <p>Feel the sea breeze</p>
+                </div>
+            </div>
+
+            <div class="pxl-effect--direction">
+                <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=400&fit=crop"
+                    alt="Forest">
+                <div class="pxl-effect--content">
+                    <h3>Deep Forest</h3>
+                    <p>Explore nature's beauty</p>
+                </div>
+            </div>
+
+            <div class="pxl-effect--direction">
+                <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&h=400&fit=crop"
+                    alt="Sunset">
+                <div class="pxl-effect--content">
+                    <h3>Golden Sunset</h3>
+                    <p>Watch the day end beautifully</p>
+                </div>
+            </div>
+
+            <div class="pxl-effect--direction">
+                <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&h=400&fit=crop"
+                    alt="Nature">
+                <div class="pxl-effect--content">
+                    <h3>Wild Nature</h3>
+                    <p>Experience the wilderness</p>
+                </div>
+            </div>
+
+            <div class="pxl-effect--direction">
+                <img src="https://images.unsplash.com/photo-1511884642898-4c92249e20b6?w=600&h=400&fit=crop" alt="Sky">
+                <div class="pxl-effect--content">
+                    <h3>Blue Sky</h3>
+                    <p>Reach for the clouds</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            "use strict";
+
+            function getDirection(ev, obj) {
+                const rect = obj.getBoundingClientRect();
+                const w = obj.offsetWidth;
+                const h = obj.offsetHeight;
+                const x = (ev.pageX - rect.left - window.scrollX - (w / 2)) * (w > h ? (h / w) : 1);
+                const y = (ev.pageY - rect.top - window.scrollY - (h / 2)) * (h > w ? (w / h) : 1);
+                const d = Math.round(Math.atan2(y, x) / 1.57079633 + 5) % 4;
+                return d;
+            }
+
+            function PXLaddClass(ev, obj, state) {
+                const direction = getDirection(ev, obj);
+                let class_suffix = null;
+
+                obj.className = 'pxl-effect--direction';
+
+                switch (direction) {
+                    case 0: class_suffix = '--top'; break;
+                    case 1: class_suffix = '--right'; break;
+                    case 2: class_suffix = '--bottom'; break;
+                    case 3: class_suffix = '--left'; break;
+                }
+                obj.classList.add(state + class_suffix);
+            }
+
+            function initPXLDirection() {
+                const elements = document.querySelectorAll('.effect--3d .pxl-effect--direction');
+
+                elements.forEach(function (element) {
+                    element.addEventListener('mouseenter', function (ev) {
+                        PXLaddClass(ev, this, 'pxl-in');
+                    });
+
+                    element.addEventListener('mouseleave', function (ev) {
+                        PXLaddClass(ev, this, 'pxl-out');
+                    });
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initPXLDirection);
+            } else {
+                initPXLDirection();
+            }
+
+        })();
+    </script>
+</body>
+
+</html>

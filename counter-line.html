@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Stats</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 300px;
+            height: 300px;
+        }
+
+        .circle-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .center-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .number {
+            font-size: 72px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .label {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin: 12px 0 0 0;
+            font-weight: 500;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-wrapper">
+            <div class="circle-container">
+                <canvas id="chartCanvas" width="300" height="300"></canvas>
+            </div>
+
+            <div class="center-content">
+                <h1 class="number" id="counter">0</h1>
+                <p class="label">visitors this month</p>
+            </div>
+        </div>
+        
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('chartCanvas');
+        const ctx = canvas.getContext('2d');
+        const centerX = 150;
+        const centerY = 150;
+        const radius = 130;
+        const lineWidth = 40;
+
+        const segments = [
+            { color: '#FF8C42', percent: 14, angle: 0 },
+            { color: '#F2C94C', percent: 25, angle: 0 },
+            { color: '#EB9CA6', percent: 12, angle: 0 },
+            { color: '#5B8DFF', percent: 19, angle: 0 },
+            { color: '#F2C94C', percent: 30, angle: 0 }
+        ];
+
+        const gap = 5; // khoảng cách 5px giữa các segment
+        const gapAngle = (gap / (2 * Math.PI * radius)) * 360; // chuyển 5px thành góc độ
+        const totalPercent = 100;
+        const totalGaps = segments.length * gapAngle;
+        const availableAngle = 360 - totalGaps;
+
+        // Tính góc cho mỗi segment
+        let currentAngle = -90; // bắt đầu từ trên cùng
+        segments.forEach((seg, i) => {
+            seg.startAngle = currentAngle;
+            seg.sweepAngle = (seg.percent / totalPercent) * availableAngle;
+            seg.endAngle = currentAngle + seg.sweepAngle;
+            currentAngle = seg.endAngle + gapAngle;
+        });
+
+        // Vẽ segments với animation - KHÔNG BAO GIỜ CLEAR SAU KHI HOÀN THÀNH
+        let currentSegmentIndex = 0;
+        let segmentProgress = 0;
+        const segmentDuration = 500;
+        const delayBetweenSegments = 100;
+        let lastTime = 0;
+        let isDelaying = false;
+        let delayStartTime = 0;
+        let lastDrawnProgress = 0;
+
+        function drawSegment(segment, progress) {
+            const drawAngle = segment.sweepAngle * progress;
+            
+            ctx.beginPath();
+            ctx.arc(
+                centerX, 
+                centerY, 
+                radius, 
+                (segment.startAngle * Math.PI) / 180,
+                ((segment.startAngle + drawAngle) * Math.PI) / 180
+            );
+            ctx.strokeStyle = segment.color;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        }
+
+        function animate(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            // Xử lý delay giữa các segments
+            if (isDelaying) {
+                const delayElapsed = timestamp - delayStartTime;
+                if (delayElapsed >= delayBetweenSegments) {
+                    isDelaying = false;
+                    currentSegmentIndex++;
+                    segmentProgress = 0;
+                    lastDrawnProgress = 0;
+                }
+                
+                // QUAN TRỌNG: Vẫn phải vẽ lại canvas trong lúc delay
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i <= currentSegmentIndex; i++) {
+                    drawSegment(segments[i], 1);
+                }
+                
+                requestAnimationFrame(animate);
+                return;
+            }
+
+            // Vẽ segment hiện tại
+            if (currentSegmentIndex < segments.length) {
+                segmentProgress += deltaTime / segmentDuration;
+                
+                if (segmentProgress > 1) {
+                    segmentProgress = 1;
+                }
+
+                // Xóa toàn bộ canvas và vẽ lại từ đầu
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Vẽ tất cả segments trước đó (đã hoàn thành)
+                for (let i = 0; i < currentSegmentIndex; i++) {
+                    drawSegment(segments[i], 1);
+                }
+                
+                // Vẽ segment hiện tại với progress hiện tại
+                drawSegment(segments[currentSegmentIndex], segmentProgress);
+                
+                lastDrawnProgress = segmentProgress;
+                
+                // Nếu segment vẽ xong, chuyển sang delay
+                if (segmentProgress >= 1 && currentSegmentIndex < segments.length - 1) {
+                    isDelaying = true;
+                    delayStartTime = timestamp;
+                }
+            }
+
+            // Tiếp tục animation
+            if (currentSegmentIndex < segments.length - 1 || (currentSegmentIndex === segments.length - 1 && segmentProgress < 1)) {
+                requestAnimationFrame(animate);
+            }
+        }
+
+        setTimeout(() => {
+            requestAnimationFrame(animate);
+        }, 300);
+
+        // Hover detection
+        const tooltip = document.getElementById('tooltip');
+        const container = document.querySelector('.container');
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Kiểm tra xem chuột có ở trong vòng tròn không
+            if (distance >= radius - lineWidth / 2 && distance <= radius + lineWidth / 2) {
+                let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+                angle = (angle + 90 + 360) % 360; // chuyển về góc từ trên cùng
+
+                // Tìm segment tương ứng
+                const hoveredSegment = segments.find(seg => 
+                    angle >= (seg.startAngle + 90) % 360 && angle <= (seg.endAngle + 90) % 360
+                );
+
+                if (hoveredSegment) {
+                    tooltip.textContent = `${hoveredSegment.percent}%`;
+                    tooltip.classList.add('show');
+                    
+                    const containerRect = container.getBoundingClientRect();
+                    tooltip.style.left = (e.clientX - containerRect.left + 15) + 'px';
+                    tooltip.style.top = (e.clientY - containerRect.top - 10) + 'px';
+                    
+                    canvas.style.cursor = 'pointer';
+                } else {
+                    tooltip.classList.remove('show');
+                    canvas.style.cursor = 'default';
+                }
+            } else {
+                tooltip.classList.remove('show');
+                canvas.style.cursor = 'default';
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('show');
+            canvas.style.cursor = 'default';
+        });
+
+        // Animate counter
+        const counter = document.getElementById('counter');
+        const target = 45623;
+        const duration = 2000;
+        const frameRate = 1000 / 60;
+        const totalFrames = Math.round(duration / frameRate);
+        let frame = 0;
+
+        const easeOutQuart = t => 1 - Math.pow(1 - t, 4);
+
+        const animateCounter = () => {
+            frame++;
+            const progress = easeOutQuart(frame / totalFrames);
+            const current = Math.floor(progress * target);
+            
+            counter.textContent = current.toLocaleString();
+            
+            if (frame < totalFrames) {
+                requestAnimationFrame(animateCounter);
+            } else {
+                counter.textContent = target.toLocaleString();
+            }
+        };
+
+        setTimeout(() => {
+            animateCounter();
+        }, 500);
+    </script>
+</body>
+</html>
