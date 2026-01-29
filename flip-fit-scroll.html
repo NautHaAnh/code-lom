@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GSAP Flip.fit + ScrollTrigger</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+                "Lucida Sans", Arial, sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            min-height: 100vh;
+            margin: 0 auto;
+            padding-top: 100px;
+            position: relative;
+            background: #fff;
+        }
+
+        .content {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            background-color: #00539c;
+        }
+
+        .content .box-target {
+            flex: 1 0 25%;
+            height: 240px;
+            border: 1px dashed #fd00a9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fit-content {
+            width: 200px;
+            height: 200px;
+            border: 1px dashed #eee;
+        }
+
+        .initial-boxes,
+        .final-boxes {
+            width: 200px;
+            height: 200px;
+            position: absolute;
+            left: -50%;
+            top: 50%;
+            transform: translateY(-100%);
+            pointer-events: none;
+        }
+
+        .final-boxes {
+            left: 50%;
+            top: 0;
+            border: 2px dashed black;
+            transform: translate(-50%, 0);
+            pointer-events: none;
+        }
+
+        .box {
+            background-color: #009c17;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+            will-change: transform;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .15);
+        }
+
+        .spacer {
+            width: 100%;
+            height: 100vh;
+            background-color: bisque;
+            display: grid;
+            place-items: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: rgba(0, 0, 0, .35);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="spacer">SPACER</div>
+
+    <main class="container">
+        <section class="content">
+            <div class="box-target">
+                <div class="fit-content"></div>
+            </div>
+            <div class="box-target">
+                <div class="fit-content"></div>
+            </div>
+            <div class="box-target">
+                <div class="fit-content"></div>
+            </div>
+            <div class="box-target">
+                <div class="fit-content"></div>
+            </div>
+            <div class="box-target">
+                <div class="fit-content"></div>
+            </div>
+            <div class="box-target">
+                <div class="fit-content"></div>
+            </div>
+            <div class="box-target">
+                <div class="fit-content"></div>
+            </div>
+            <div class="box-target">
+                <div class="fit-content"></div>
+            </div>
+        </section>
+
+        <section class="initial-boxes">
+            <div class="box">Box 1</div>
+            <div class="box">Box 2</div>
+            <div class="box">Box 3</div>
+            <div class="box">Box 4</div>
+            <div class="box">Box 5</div>
+            <div class="box">Box 6</div>
+            <div class="box">Box 7</div>
+            <div class="box">Box 8</div>
+        </section>
+
+        <section class="final-boxes"></section>
+    </main>
+
+    <div class="spacer">SPACER</div>
+
+    <!-- GSAP CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/Flip.min.js"></script>
+
+    <script>
+        console.clear();
+
+        gsap.registerPlugin(ScrollTrigger, Flip);
+
+        const boxes = gsap.utils.toArray(".box");
+        const boxTargets = gsap.utils.toArray(".fit-content");
+        const finalBoxesCont = document.querySelector(".final-boxes");
+
+        // Timeline pinned + scrub
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".container",
+                start: "top top",
+                end: "+=300%",
+                scrub: true,
+                pin: true,
+                markers: true
+            }
+        });
+
+        // 1) Fit each box into each target in the grid
+        boxes.forEach((b, i) => {
+            tl.add(
+                Flip.fit(b, boxTargets[i], {
+                    duration: 1,
+                    ease: "power1.inOut"
+                }),
+                0.1 * i
+            );
+        });
+
+        // 2) Then fit all boxes into the final container (center top)
+        // IMPORTANT: Flip.fit expects an element as the 2nd param (not a Flip state)
+        boxes.forEach((b, i) => {
+            tl.add(
+                Flip.fit(b, finalBoxesCont, {
+                    duration: 1,
+                    ease: "none"
+                }),
+                i > 0 ? "<+=" + 0.1 * i : "+=3"
+            );
+        });
+
+        // keep timeline alive
+        tl.to({}, { duration: 0.01 });
+    </script>
+</body>
+
+</html>
