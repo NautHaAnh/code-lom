@@ -18,6 +18,20 @@
                 "Lucida Sans", Arial, sans-serif;
         }
 
+        .initial-boxes {
+            width: 200px;
+            height: 200px;
+            position: fixed;
+            /* Hoặc absolute tùy theo bạn muốn */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            /* Căn giữa cả chiều ngang và chiều cao */
+            pointer-events: none;
+            z-index: 10;
+            /* Đảm bảo hiển thị phía trên */
+        }
+
         .container {
             width: 100%;
             max-width: 1000px;
@@ -58,7 +72,6 @@
             position: absolute;
             left: -50%;
             top: 50%;
-            transform: translateY(-100%);
             pointer-events: none;
         }
 
@@ -160,15 +173,24 @@
         const boxTargets = gsap.utils.toArray(".fit-content");
         const finalBoxesCont = document.querySelector(".final-boxes");
 
+        // Lưu trạng thái ban đầu của các box
+        const initialStates = boxes.map(box => Flip.getState(box));
+
         // Timeline pinned + scrub
         const tl = gsap.timeline({
             scrollTrigger: {
                 trigger: ".container",
-                start: "top top",
-                end: "+=300%",
+                start: "center center",
+                end: "+=150%",
                 scrub: true,
                 pin: true,
-                markers: true
+                markers: true,
+                onUpdate: (self) => {
+                    // Khi animation hoàn thành (progress = 1), quay lại vị trí ban đầu
+                    if (self.getVelocity() === 0 && self.progress === 1) {
+                        // Animation kết thúc, sẽ quay lại vị trí ban đầu
+                    }
+                }
             }
         });
 
@@ -179,22 +201,9 @@
                     duration: 1,
                     ease: "power1.inOut"
                 }),
-                0.1 * i
+                1 * i
             );
         });
-
-        // 2) Then fit all boxes into the final container (center top)
-        // IMPORTANT: Flip.fit expects an element as the 2nd param (not a Flip state)
-        boxes.forEach((b, i) => {
-            tl.add(
-                Flip.fit(b, finalBoxesCont, {
-                    duration: 1,
-                    ease: "none"
-                }),
-                i > 0 ? "<+=" + 0.1 * i : "+=3"
-            );
-        });
-
         // keep timeline alive
         tl.to({}, { duration: 0.01 });
     </script>

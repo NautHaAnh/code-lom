@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Grid Card</title>
+    <style>
+      :root {
+        --grid-bg-clr: rgb(34, 0, 45);
+        --card-bg-clr: rgba(18, 0, 23, 0.8);
+        --line-clr: rgba(200, 0, 255, 0.1);
+        --cursor-clr: rgb(200, 0, 255);
+        --link-clr: rgb(80, 40, 88);
+        --watermark-clr: rgb(80, 40, 88);
+        --link-accent-clr: rgba(224, 112, 255, 0.8);
+        --label-clr: rgb(238, 178, 255);
+        --value-clr: rgb(251, 238, 255);
+        --glass-bg: rgba(255, 255, 255, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        color-scheme: dark;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        position: relative;
+        display: grid;
+        place-content: center;
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      /* GRID  */
+      .grid {
+        display: grid;
+        place-items: center;
+        position: relative;
+        height: 80vh;
+        width: 80vw;
+        background-color: var(--grid-bg-clr);
+        border-radius: 10px;
+        perspective: 1000px;
+      }
+
+      .grid::after {
+        pointer-events: none;
+        content: "";
+        background-color: var(--line-clr);
+        position: absolute;
+        width: 2px;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+      }
+      .grid::before {
+        pointer-events: none;
+        content: "";
+        background-color: var(--line-clr);
+        height: 2px;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+        z-index: 2;
+      }
+
+      /* CARD */
+      .card {
+        width: min(420px, 80vw);
+        height: min(260px, 45vh);
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-color: var(--card-bg-clr);
+        backdrop-filter: blur(10px);
+        border-radius: 10px;
+        transition: transform 300ms ease, background-color 300ms ease;
+        z-index: 10;
+        position: relative;
+      }
+      .card .hstack {
+        display: flex;
+        gap: 2rem;
+        justify-content: space-between;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="grid" id="container">
+      <div class="card" id="card"></div>
+    </div>
+
+    <script>
+      const containerEl = document.querySelector("#container");
+      const cardEl = document.querySelector("#card");
+
+      const TILT_INTENSITY = 30;
+
+      const normalize = ({ value, min = 0, max = 100, scale = 1 }) => {
+        let v = (value - min) / (max + min);
+        v = Math.floor(v * scale);
+        return v;
+      };
+
+      containerEl.addEventListener("mousemove", (e) => {
+        const rect = containerEl.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const width = rect.width;
+        const height = rect.height;
+
+        const origin = { x: width / 2, y: height / 2 };
+        const position = { x: -(origin.x - x), y: origin.y - y };
+
+        const euclideanDist = Math.floor(
+          Math.pow(Math.pow(position.x, 2) + Math.pow(position.y, 2), 0.5)
+        );
+
+        const Xtilt = normalize({
+          value: Math.abs(position.y),
+          min: 0,
+          max: Math.floor(height / 2),
+          scale: TILT_INTENSITY
+        });
+
+        const Ytilt = normalize({
+          value: Math.abs(position.x),
+          min: 0,
+          max: Math.floor(width / 2),
+          scale: TILT_INTENSITY
+        });
+
+        let angle = Math.atan2(position.y, position.x) * (180 / Math.PI);
+        if (angle < 0) {
+          angle += 360;
+        }
+        angle = Math.floor(angle);
+
+        let translations = [];
+
+        if (position.y > 0) {
+          translations.push(`rotateX(${Xtilt}deg)`);
+        } else {
+          translations.push(`rotateX(-${Xtilt}deg)`);
+        }
+
+        if (position.x > 0) {
+          translations.push(`rotateY(${Ytilt}deg)`);
+        } else {
+          translations.push(`rotateY(-${Ytilt}deg)`);
+        }
+
+        translations.push("scale(1.1)");
+        cardEl.style.transform = translations.join(" ");
+      });
+
+      containerEl.addEventListener("mouseleave", () => {
+        cardEl.style.transform = "none";
+      });
+    </script>
+  </body>
+</html>
